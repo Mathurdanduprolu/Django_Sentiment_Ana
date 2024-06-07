@@ -1,0 +1,47 @@
+{% extends 'sentimentapp/base.html' %} {% block content %}
+<h1 class="text-2xl font-bold mb-4">Sentiment Analysis</h1>
+<form id="analyzeForm" class="mb-8">
+  <label for="text" class="block text-sm font-medium text-gray-700"
+    >Enter Text:</label
+  >
+  <textarea
+    id="text"
+    name="text"
+    class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+  ></textarea>
+  <button type="submit" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
+    Analyze
+  </button>
+</form>
+<h2 class="text-xl font-semibold mb-2">Sentiment Scores:</h2>
+<pre id="sentimentScores" class="bg-gray-100 p-4 rounded-md"></pre>
+<div id="sentimentImage" class="mt-4"></div>
+
+<script>
+  const happyImage = "{{ happy_image_url }}";
+  const sadImage = "{{ sad_image_url }}";
+
+  document.getElementById("analyzeForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const text = document.getElementById("text").value;
+    const response = await fetch("/sentimentapp/analyze/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text: text }),
+    });
+    const data = await response.json();
+    const scores = JSON.stringify(data.sentiment_scores, null, 2);
+    document.getElementById("sentimentScores").textContent = scores;
+
+    const compoundScore = data.sentiment_scores.compound;
+    const sentimentImage = document.getElementById("sentimentImage");
+    if (compoundScore > 0) {
+      sentimentImage.innerHTML = `<img src="${happyImage}" alt="Positive Sentiment">`;
+    } else {
+      sentimentImage.innerHTML = `<img src="${sadImage}" alt="Negative Sentiment">`;
+    }
+  };
+</script>
+{% endblock %}
